@@ -1,0 +1,9 @@
+{
+  "name": "Dragon Masters",
+  "short_name": "Dragon Masters",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "landscape-primary"
+}
