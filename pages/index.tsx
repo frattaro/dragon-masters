@@ -48,17 +48,25 @@ export default function Home() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    const clickHandler = () => {
+    const handleMusic = () => {
       if (audioRef.current) {
         audioRef.current.volume = 0.33;
-        audioRef.current.play();
+
+        if (document.visibilityState === "visible") {
+          audioRef.current.play();
+          return;
+        }
+
+        audioRef.current.pause();
       }
     };
 
-    window.addEventListener("click", clickHandler);
+    window.addEventListener("click", handleMusic);
+    window.addEventListener("visibilitychange", handleMusic);
 
     return () => {
-      window.removeEventListener("click", clickHandler);
+      window.removeEventListener("click", handleMusic);
+      window.removeEventListener("visibilitychange", handleMusic);
     };
   }, [audioRef]);
 
@@ -212,10 +220,7 @@ export default function Home() {
     <>
       <Head>
         <title>Dragon Masters</title>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0,, maximum-scale=1.0, user-scalable=no"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div
@@ -227,6 +232,7 @@ export default function Home() {
           left: ${world.left * tileSideLength}px;
           top: ${world.top * tileSideLength}px;
           transition: all 1s ease 0s;
+          touch-action: none;
         `}
       >
         <div

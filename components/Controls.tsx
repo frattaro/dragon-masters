@@ -20,6 +20,7 @@ export default function Controls({
     background-color: rgba(0, 0, 0, 0.66);
     border: 0;
     margin: 4px;
+    touch-action: none;
   `;
 
   return (
