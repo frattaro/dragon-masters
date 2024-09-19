@@ -1,8 +1,11 @@
 import Battle from "@/components/Battle";
 import Controls from "@/components/Controls";
+import Map from "@/components/Map";
+import { tileSideLength } from "@/utils/constants";
+import overworldMap from "@/utils/overworldMap";
 import { css } from "@emotion/react";
 import Head from "next/head";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Enemy = {
   image: string;
@@ -30,8 +33,6 @@ const enemies: Record<string, Enemy> = {
     attack: 12
   }
 };
-
-const tileSideLength = 100;
 
 export default function Home() {
   const [dragon, setDragon] = useState<Dragon>({
@@ -61,18 +62,6 @@ export default function Home() {
     };
   }, [audioRef]);
 
-  const launchBattle = useCallback(
-    (newEnemy: Enemy) => {
-      if (!dragon.hp) return;
-
-      setEnemy({
-        ...newEnemy
-      });
-      setBattle(true);
-    },
-    [dragon]
-  );
-
   const [sprites, setSprites] = useState([
     {
       name: "Player",
@@ -94,35 +83,33 @@ export default function Home() {
     }
   ]);
 
-  const map = useMemo(
-    () => ({
-      maxWidth: 50,
-      maxHeight: 50,
-      music: "overworld.wav",
-      tiles: new Array(50 * 50)
-        .fill({
-          tile: "grass",
-          event: () => {}
-        })
-        .map((x, i) => {
-          const tile = { ...x };
-          if (i === 4) {
-            // healDragon();
-          }
+  const [world, setWorld] = useState({
+    left: 0,
+    top: 0
+  });
+  const [map] = useState(overworldMap);
+  const [currentMusic] = useState(map.music);
 
-          if (i === 1 * 50 + 3) {
-            tile.event = () => {
-              launchBattle(enemies.redDragon);
-            };
-          }
+  const onPlayerMove = useCallback(
+    (playerSprite: (typeof sprites)[number]) => {
+      const blocksWide = Math.floor(window.innerWidth / tileSideLength) / 2;
+      const blocksTall = Math.floor(window.innerHeight / tileSideLength) / 2;
 
-          return tile;
-        })
-    }),
-    [launchBattle]
+      setWorld({
+        left: Math.max(
+          Math.min(0, -1 * (playerSprite.left - blocksWide)),
+          (-1 * (tileSideLength * map.maxWidth - window.innerWidth)) /
+            tileSideLength
+        ),
+        top: Math.max(
+          Math.min(0, -1 * (playerSprite.top - blocksTall)),
+          (-1 * (tileSideLength * map.maxHeight - window.innerHeight)) /
+            tileSideLength
+        )
+      });
+    },
+    [map]
   );
-
-  const [currentMusic /*, setCurrentMusic*/] = useState(map.music);
 
   const moveDown = useCallback(() => {
     if (battle) return;
@@ -134,10 +121,11 @@ export default function Home() {
       ...sprites.slice(1)
     ];
     setSprites(newSprites);
+    onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle]);
+  }, [map, sprites, battle, onPlayerMove]);
 
   const moveUp = useCallback(() => {
     if (battle) return;
@@ -149,10 +137,11 @@ export default function Home() {
       ...sprites.slice(1)
     ];
     setSprites(newSprites);
+    onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle]);
+  }, [map, sprites, battle, onPlayerMove]);
 
   const moveLeft = useCallback(() => {
     if (battle) return;
@@ -164,10 +153,11 @@ export default function Home() {
       ...sprites.slice(1)
     ];
     setSprites(newSprites);
+    onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle]);
+  }, [map, sprites, battle, onPlayerMove]);
 
   const moveRight = useCallback(() => {
     if (battle) return;
@@ -179,10 +169,11 @@ export default function Home() {
       ...sprites.slice(1)
     ];
     setSprites(newSprites);
+    onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle]);
+  }, [map, sprites, battle, onPlayerMove]);
 
   const keyHandlers = useCallback(
     (e: KeyboardEvent) => {
@@ -233,6 +224,9 @@ export default function Home() {
           position: absolute;
           inset: 0;
           overflow: hidden;
+          left: ${world.left * tileSideLength}px;
+          top: ${world.top * tileSideLength}px;
+          transition: all 1s ease 0s;
         `}
       >
         <div
@@ -245,17 +239,7 @@ export default function Home() {
             flex-wrap: wrap;
           `}
         >
-          {map.tiles.map((x, i) => (
-            <div
-              key={i}
-              css={css`
-                height: ${tileSideLength}px;
-                width: ${tileSideLength}px;
-                background-image: url("${x.tile}.png");
-                background-size: cover;
-              `}
-            ></div>
-          ))}
+          <Map map={overworldMap} />
         </div>
         <div
           className="sprites"
