@@ -5,7 +5,7 @@ import { tileSideLength } from "@/utils/constants";
 import overworldMap from "@/utils/overworldMap";
 import { css } from "@emotion/react";
 import Head from "next/head";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 export type Enemy = {
   image: string;
@@ -45,19 +45,35 @@ export default function Home() {
   });
   const [enemy, setEnemy] = useState<Enemy>(enemies.redDragon);
   const [battle, setBattle] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const overworldAudioRef = useRef<HTMLAudioElement>(null);
+  const battleAudioRef = useRef<HTMLAudioElement>(null);
+  const [map] = useState(overworldMap);
+  const [musicMap] = useState<Record<string, RefObject<HTMLAudioElement>>>({
+    overworld: overworldAudioRef,
+    battle: battleAudioRef
+  });
+  const [music, setMusic] = useState<{
+    prev: string | null;
+    current: string | null;
+  }>({
+    prev: null,
+    current: map.music
+  });
+  const [world, setWorld] = useState({
+    left: 0,
+    top: 0
+  });
 
   useEffect(() => {
     const handleMusic = () => {
-      if (audioRef.current) {
-        audioRef.current.volume = 0.33;
-
+      const audio = musicMap[music.current || ""]?.current;
+      if (audio) {
         if (document.visibilityState === "visible") {
-          audioRef.current.play();
+          audio.play();
           return;
         }
 
-        audioRef.current.pause();
+        audio.pause();
       }
     };
 
@@ -68,7 +84,28 @@ export default function Home() {
       window.removeEventListener("click", handleMusic);
       window.removeEventListener("visibilitychange", handleMusic);
     };
-  }, [audioRef]);
+  }, []); // eslint-disable-line
+
+  useEffect(() => {
+    musicMap[music.prev || ""]?.current?.pause();
+    musicMap[music.current || ""]?.current?.play();
+  }, [music, musicMap]);
+
+  const launchBattle = useCallback(
+    (newEnemy: Enemy) => {
+      if (!dragon.hp) return;
+
+      setEnemy({
+        ...newEnemy
+      });
+      setBattle(true);
+      setMusic((curr) => ({
+        prev: curr.current,
+        current: "battle"
+      }));
+    },
+    [dragon, setMusic]
+  );
 
   const [sprites, setSprites] = useState([
     {
@@ -81,22 +118,34 @@ export default function Home() {
       name: "Red Dragon",
       left: 3,
       top: 1,
-      image: "dragon-overworld.png"
+      image: "dragon-overworld.png",
+      onCollide: () => {
+        launchBattle({ ...enemies.redDragon });
+      }
     },
     {
       name: "Purple Mushroom",
       left: 4,
       top: 0,
-      image: "mushroom.png"
+      image: "mushroom.png",
+      onCollide: () => {
+        alert("I'm a mushroom! I'll heal you!");
+        setDragon((prev) => ({
+          ...prev,
+          hp: prev.maxHP
+        }));
+      }
     }
   ]);
 
-  const [world, setWorld] = useState({
-    left: 0,
-    top: 0
-  });
-  const [map] = useState(overworldMap);
-  const [currentMusic] = useState(map.music);
+  const checkCollision = useCallback(
+    (newPositionLeft: number, newPositionTop: number) => {
+      return sprites.find(
+        (x) => x.left === newPositionLeft && x.top === newPositionTop
+      );
+    },
+    [sprites]
+  );
 
   const onPlayerMove = useCallback(
     (playerSprite: (typeof sprites)[number]) => {
@@ -128,12 +177,19 @@ export default function Home() {
       },
       ...sprites.slice(1)
     ];
+
+    const collision = checkCollision(newSprites[0].left, newSprites[0].top);
+    if (collision) {
+      collision.onCollide?.();
+      return;
+    }
+
     setSprites(newSprites);
     onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision]);
 
   const moveUp = useCallback(() => {
     if (battle) return;
@@ -144,12 +200,19 @@ export default function Home() {
       },
       ...sprites.slice(1)
     ];
+
+    const collision = checkCollision(newSprites[0].left, newSprites[0].top);
+    if (collision) {
+      collision.onCollide?.();
+      return;
+    }
+
     setSprites(newSprites);
     onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision]);
 
   const moveLeft = useCallback(() => {
     if (battle) return;
@@ -160,12 +223,19 @@ export default function Home() {
       },
       ...sprites.slice(1)
     ];
+
+    const collision = checkCollision(newSprites[0].left, newSprites[0].top);
+    if (collision) {
+      collision.onCollide?.();
+      return;
+    }
+
     setSprites(newSprites);
     onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision]);
 
   const moveRight = useCallback(() => {
     if (battle) return;
@@ -176,12 +246,19 @@ export default function Home() {
       },
       ...sprites.slice(1)
     ];
+
+    const collision = checkCollision(newSprites[0].left, newSprites[0].top);
+    if (collision) {
+      collision.onCollide?.();
+      return;
+    }
+
     setSprites(newSprites);
     onPlayerMove(newSprites[0]);
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision]);
 
   const keyHandlers = useCallback(
     (e: KeyboardEvent) => {
@@ -273,7 +350,13 @@ export default function Home() {
       </div>
       <Battle
         open={battle}
-        onClose={() => setBattle(false)}
+        onClose={() => {
+          setBattle(false);
+          setMusic((curr) => ({
+            prev: curr.current,
+            current: curr.prev
+          }));
+        }}
         dragon={dragon}
         setDragon={(newDragon) => setDragon(newDragon)}
         enemy={enemy}
@@ -286,8 +369,9 @@ export default function Home() {
         onRight={moveRight}
         show={!battle}
       />
-      {/* eslint-disable-next-line */}
-      <audio loop src={`/${currentMusic}`} ref={audioRef} />
+
+      <audio loop src="/overworld.wav" ref={overworldAudioRef} />
+      <audio loop src="/battle.wav" ref={battleAudioRef} />
     </>
   );
 }
