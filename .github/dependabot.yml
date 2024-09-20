@@ -4,3 +4,17 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      types:
+        patterns:
+          - "@types/*"
+      nextjs:
+        patterns:
+          - "eslint-config-next"
+          - "next"
+      emotion:
+        patterns:
+          - "@emotion/*"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
