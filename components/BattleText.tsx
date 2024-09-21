@@ -13,7 +13,11 @@ export default function BattleText({
     <div
       css={css`
         position: absolute;
-        top: ${position === "top" ? "50px" : "300px"};
+        top: ${position === "top"
+          ? "10vh"
+          : position === "bottom"
+            ? "80vh"
+            : "45vh"};
         left: 50%;
         transform: translateX(-50%);
         display: ${open ? "flex" : "none"};

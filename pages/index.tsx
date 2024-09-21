@@ -13,6 +13,7 @@ export type Enemy = {
   name: string;
   attack: number;
   attackImage: string;
+  attackSound: string;
 };
 
 export type Dragon = {
@@ -26,10 +27,11 @@ export type Dragon = {
 
 const enemies: Record<string, Enemy> = {
   redDragon: {
-    image: "red-dragon.png",
+    image: "red-dragon-ai.png",
     hp: 100,
     name: "Red Dragon!",
-    attackImage: "fire.png",
+    attackImage: "fireball.png",
+    attackSound: "fireball",
     attack: 12
   }
 };
@@ -41,7 +43,7 @@ export default function Home() {
     hp: 46,
     maxHP: 200,
     image: "dragon.png",
-    attackImage: "fire.png"
+    attackImage: "fireball.png"
   });
   const [enemy, setEnemy] = useState<Enemy>(enemies.redDragon);
   const [battle, setBattle] = useState(false);
@@ -64,27 +66,35 @@ export default function Home() {
     top: 0
   });
 
-  useEffect(() => {
-    const handleMusic = () => {
-      const audio = musicMap[music.current || ""]?.current;
-      if (audio) {
-        if (document.visibilityState === "visible") {
-          audio.play();
-          return;
-        }
-
-        audio.pause();
+  const handleMusic = useCallback(() => {
+    const audio = musicMap[music.current || ""]?.current;
+    if (audio) {
+      if (document.visibilityState === "visible") {
+        audio.play();
+        return;
       }
-    };
 
-    window.addEventListener("click", handleMusic);
+      audio.pause();
+    }
+  }, [music, musicMap]);
+
+  useEffect(() => {
+    window.addEventListener(
+      "click",
+      () => {
+        handleMusic();
+      },
+      { once: true }
+    );
+  }, []);
+
+  useEffect(() => {
     window.addEventListener("visibilitychange", handleMusic);
 
     return () => {
-      window.removeEventListener("click", handleMusic);
       window.removeEventListener("visibilitychange", handleMusic);
     };
-  }, []); // eslint-disable-line
+  }, [handleMusic]);
 
   useEffect(() => {
     musicMap[music.prev || ""]?.current?.pause();
