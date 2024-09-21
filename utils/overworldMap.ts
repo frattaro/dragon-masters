@@ -15,7 +15,7 @@ const overworldMap: Map = {
         };
       }
 
-      if (i === 4 * 50 + 7) {
+      if ([7, 1 * 50 + 7, 2 * 50 + 7, 3 * 50 + 7, 4 * 50 + 7].includes(i)) {
         return {
           tile: "tree"
         };

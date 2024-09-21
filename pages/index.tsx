@@ -49,6 +49,7 @@ export default function Home() {
     left: 0,
     top: 0
   });
+  const [battleSpriteId, setBattleSpriteId] = useState<number | undefined>();
 
   const handleMusic = useCallback(() => {
     const audio = musicMap[music.current || ""]?.current;
@@ -86,8 +87,10 @@ export default function Home() {
   }, [music, musicMap]);
 
   const launchBattle = useCallback(
-    (newEnemy: Enemy) => {
+    (newEnemy: Enemy, associatedSpriteId: number) => {
       if (!dragon.hp) return;
+
+      setBattleSpriteId(associatedSpriteId);
 
       setEnemy({
         ...newEnemy
@@ -103,27 +106,36 @@ export default function Home() {
 
   const [sprites, setSprites] = useState([
     {
+      id: 1,
       name: "Player",
       left: 0,
       top: 0,
       image: "player.png"
     },
     {
+      id: 2,
       name: "Red Dragon",
       left: 3,
       top: 1,
       image: "dragon-overworld.png",
       onCollide: () => {
-        launchBattle({ ...enemies.redDragon });
+        launchBattle({ ...enemies.redDragon }, 2);
       }
     },
     {
+      id: 3,
       name: "Purple Mushroom",
       left: 4,
       top: 0,
       image: "mushroom.png",
       onCollide: () => {
-        alert("I'm a mushroom! I'll heal you!");
+        alert(`${dragon.name} eats the mushroom. It's fully healed!`);
+        setSprites((prev) => {
+          const newSprites = [...prev];
+          newSprites.splice(newSprites.findIndex((x) => x.id === 3));
+          return newSprites;
+        });
+
         setDragon((prev) => ({
           ...prev,
           hp: prev.maxHP
@@ -362,6 +374,15 @@ export default function Home() {
       <Battle
         open={battle}
         onClose={() => {
+          if (battleSpriteId) {
+            const newSprites = [...sprites];
+            newSprites.splice(
+              sprites.findIndex((x) => x.id === battleSpriteId),
+              1
+            );
+            setSprites(newSprites);
+          }
+
           setBattle(false);
           setMusic((curr) => ({
             prev: curr.current,
