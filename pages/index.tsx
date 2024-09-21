@@ -1,29 +1,13 @@
 import Battle from "@/components/Battle";
 import Controls from "@/components/Controls";
 import Map from "@/components/Map";
+import { Dragon, Enemy } from "@/types";
 import { tileSideLength } from "@/utils/constants";
+import { mapTileProperties } from "@/utils/mapTileProperties";
 import overworldMap from "@/utils/overworldMap";
 import { css } from "@emotion/react";
 import Head from "next/head";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
-
-export type Enemy = {
-  image: string;
-  hp: number;
-  name: string;
-  attack: number;
-  attackImage: string;
-  attackSound: string;
-};
-
-export type Dragon = {
-  hp: number;
-  maxHP: number;
-  name: string;
-  attack: number;
-  image: string;
-  attackImage: string;
-};
 
 const enemies: Record<string, Enemy> = {
   redDragon: {
@@ -86,7 +70,7 @@ export default function Home() {
       },
       { once: true }
     );
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.addEventListener("visibilitychange", handleMusic);
@@ -157,6 +141,15 @@ export default function Home() {
     [sprites]
   );
 
+  const checkCanWalk = useCallback(
+    (newPositionLeft: number, newPositionTop: number) => {
+      return mapTileProperties[
+        map.tiles[newPositionTop * map.maxWidth + newPositionLeft].tile
+      ].canWalk;
+    },
+    [map]
+  );
+
   const onPlayerMove = useCallback(
     (playerSprite: (typeof sprites)[number]) => {
       const blocksWide = Math.floor(window.innerWidth / tileSideLength) / 2;
@@ -188,6 +181,8 @@ export default function Home() {
       ...sprites.slice(1)
     ];
 
+    if (!checkCanWalk(newSprites[0].left, newSprites[0].top)) return;
+
     const collision = checkCollision(newSprites[0].left, newSprites[0].top);
     if (collision) {
       collision.onCollide?.();
@@ -199,7 +194,7 @@ export default function Home() {
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove, checkCollision]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision, checkCanWalk]);
 
   const moveUp = useCallback(() => {
     if (battle) return;
@@ -211,6 +206,8 @@ export default function Home() {
       ...sprites.slice(1)
     ];
 
+    if (!checkCanWalk(newSprites[0].left, newSprites[0].top)) return;
+
     const collision = checkCollision(newSprites[0].left, newSprites[0].top);
     if (collision) {
       collision.onCollide?.();
@@ -222,7 +219,7 @@ export default function Home() {
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove, checkCollision]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision, checkCanWalk]);
 
   const moveLeft = useCallback(() => {
     if (battle) return;
@@ -234,6 +231,8 @@ export default function Home() {
       ...sprites.slice(1)
     ];
 
+    if (!checkCanWalk(newSprites[0].left, newSprites[0].top)) return;
+
     const collision = checkCollision(newSprites[0].left, newSprites[0].top);
     if (collision) {
       collision.onCollide?.();
@@ -245,7 +244,7 @@ export default function Home() {
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove, checkCollision]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision, checkCanWalk]);
 
   const moveRight = useCallback(() => {
     if (battle) return;
@@ -257,6 +256,8 @@ export default function Home() {
       ...sprites.slice(1)
     ];
 
+    if (!checkCanWalk(newSprites[0].left, newSprites[0].top)) return;
+
     const collision = checkCollision(newSprites[0].left, newSprites[0].top);
     if (collision) {
       collision.onCollide?.();
@@ -268,7 +269,7 @@ export default function Home() {
 
     const mapIndex = newSprites[0].top * map.maxWidth + newSprites[0].left;
     map.tiles[mapIndex].event?.();
-  }, [map, sprites, battle, onPlayerMove, checkCollision]);
+  }, [map, sprites, battle, onPlayerMove, checkCollision, checkCanWalk]);
 
   const keyHandlers = useCallback(
     (e: KeyboardEvent) => {
