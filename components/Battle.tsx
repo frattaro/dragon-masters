@@ -1,7 +1,7 @@
-import { Dragon, Enemy } from "@/pages";
 import { css } from "@emotion/react";
 import { RefObject, useRef, useState } from "react";
 
+import { Dragon, Enemy } from "../types";
 import BattleText from "./BattleText";
 
 export default function Battle({
@@ -34,9 +34,9 @@ export default function Battle({
   const [attackDisabled, setAttackDisabled] = useState(false);
   const [lost, setLost] = useState(false);
   const [win, setWin] = useState(false);
-  const fireballAudioRef = useRef<HTMLAudioElement>(null);
+  const fireballAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const attackSoundMap: Record<string, RefObject<HTMLAudioElement>> = {
+  const attackSoundMap: Record<string, RefObject<HTMLAudioElement | null>> = {
     fireball: fireballAudioRef
   };
 

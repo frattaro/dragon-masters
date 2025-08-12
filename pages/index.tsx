@@ -31,10 +31,12 @@ export default function Home() {
   });
   const [enemy, setEnemy] = useState<Enemy>(enemies.redDragon);
   const [battle, setBattle] = useState(false);
-  const overworldAudioRef = useRef<HTMLAudioElement>(null);
-  const battleAudioRef = useRef<HTMLAudioElement>(null);
+  const overworldAudioRef = useRef<HTMLAudioElement | null>(null);
+  const battleAudioRef = useRef<HTMLAudioElement | null>(null);
   const [map] = useState(overworldMap);
-  const [musicMap] = useState<Record<string, RefObject<HTMLAudioElement>>>({
+  const [musicMap] = useState<
+    Record<string, RefObject<HTMLAudioElement | null>>
+  >({
     overworld: overworldAudioRef,
     battle: battleAudioRef
   });
