@@ -13,13 +13,13 @@
     "@emotion/server": "11.11.0",
     "@emotion/styled": "11.14.1",
     "next": "16.1.4",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "6.0.2",
     "@types/node": "22.19.7",
-    "@types/react": "19.2.9",
+    "@types/react": "19.2.10",
     "@types/react-dom": "19.2.3",
     "eslint": "^8",
     "eslint-config-prettier": "10.1.8",
