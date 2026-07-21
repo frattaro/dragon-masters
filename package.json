@@ -28,6 +28,6 @@
     "eslint-plugin-anti-trojan-source": "1.1.7",
     "prettier": "3.9.5",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.64.0"
+    "typescript-eslint": "8.65.0"
   }
 }
